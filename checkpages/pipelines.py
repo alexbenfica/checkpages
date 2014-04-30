@@ -53,9 +53,6 @@ class HTMLWriterPipeline(object):
                 
                 self.html << div('', cl="page-header ") << h1('URLs from ' + a(spider.start_urls[0], href=spider.start_urls[0]).render())
                 self.html_container = self.html << div(cl="container-fluid") << div(cl="row")
-                self.html_ok = self.html_container << div(cl="")
-                self.html_err = self.html_container << div(cl="")
-                
 
             
     def open_spider(self, spider):
@@ -74,34 +71,40 @@ class HTMLWriterPipeline(object):
         self.itens = sorted(self.itens, key=itemgetter('title', 'external'))
 
 
-        self.html_container << '<table class="table table-bordered">'
 
-        self.html_container << '''
-        <thead>
-          <tr>
-            <th>HTTP</th>
-            <th>Title + URL</th>
-            <th>Referer</th>
-            <th>Forb. words</th>
-          </tr>
-        </thead>
-        <tbody>
-        '''
         
+        def html_page_header(title, subtitle, content): 
+            return '''
+            <div class="page-header">
+              <h1>%s <small> %s </small></h1>
+              %s
+            </div>
+        ''' % (title , subtitle, content)
+        
+        
+        html_errors = ''
+        html_ok = ''
 
         for item in self.itens:            
-            http_status = int(item.get('http_status', 999))            
             
-            # Set colors for HTTP erros (aprox.)
+            http_status = int(item.get('http_status', 999))                        
+            # Set colors for each HTTP erros (aprox.)
             item_class = 'danger';            
             if http_status < 400: item_class = 'primary';
-            if http_status < 300: 
-                item_class = 'success';                
-                # do not list success when there were not forbidden words.
-                if not item.get('forbidden_words',[]): continue
-
+            if http_status < 300: item_class = 'success';                
+                
+            item_has_errors = False
+            if item.get('forbidden_words',[]): item_has_errors = True
+            if http_status >= 400: item_has_errors = True
             
-            self.html_container << '''            
+            
+            if item_has_errors:
+                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger">Visit and Fix</span></a></small>' % item.get('referer','(no referer)')
+            else:
+                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
+                
+            
+            html_item = '''            
               <tr class="%s">
                 <td><small>%s</small></td>
                 <td><small>
@@ -110,7 +113,7 @@ class HTMLWriterPipeline(object):
                     <a href="%s">%s</a>
                     </small>
                 </td>                
-                <td><small><a href="%s"><span class="btn btn-mini btn-primary">See & Fix</span></a></small></td>                
+                <td>%s</td>                
                 <td><small>%s</small></td>                
             </tr>
               
@@ -119,16 +122,44 @@ class HTMLWriterPipeline(object):
                   item.get('title','(no title)'), 
                   item.get('url','(no url)'),                  
                   item.get('url','(no url)'),                  
-                  item.get('referer','(no referer)'),                  
+                  html_referer,                  
                   ', '.join(item.get('forbidden_words',[])),
                 )
+        
+            if item_has_errors:
+                html_errors += html_item
+            else:
+                html_ok += html_item
+                
                
         
+
+
         
-        self.html_container << '''
+        html_table_open = '''   
+            <table class="table table-bordered thumbnail">
+                <thead>
+                  <tr>
+                    <th>HTTP</th>
+                    <th>Title + URL</th>
+                    <th>Referer</th>
+                    <th>Forb. words</th>
+                  </tr>
+                </thead>
+                <tbody>
+            '''
+        
+        
+        html_table_close = '''        
                 </tbody>
-            </table>'''
-            
+            </table>
+            '''
+
+        
+        self.html_container << html_page_header('Links with problems', 'You must check and fix each one', html_table_open + html_errors + html_table_close )        
+        
+        self.html_container << html_page_header('Links  apparently ok', 'You can visit each one here', html_table_open + html_ok + html_table_close  )        
+
             
         # Write HTML to disk!        
         self.html_file.write(self.html.render())            
