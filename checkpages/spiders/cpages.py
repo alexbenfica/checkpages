@@ -29,7 +29,7 @@ class CPages(CrawlSpider):
         self.start_url_domain = start_url.split('//')[-1].replace('www.','').strip('/')
 
         
-        regex_to_internal = "((\/\/)|(http\:\/\/)|(www.))+"+self.start_url_domain+"[^.][^?&]*"
+        regex_to_internal = "((\/\/)|(http\:\/\/)|(www.))+"+self.start_url_domain+"[^.]"
         
         # The URL is processed by the first rules that matches!
         # So ay other URLs are considered external and will not be followed, but will have the header requested to see if they are available, find 404 and so on.
