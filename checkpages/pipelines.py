@@ -99,29 +99,32 @@ class HTMLWriterPipeline(object):
             
             
             if item_has_errors:
-                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger">Visit and Fix</span></a></small>' % item.get('referer','(no referer)')
+                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit and Fix</span></a></small>' % item.get('referer','(no referer)')
             else:
                 html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
                 
             
+            icon_external = ''
+            if item['external']:
+                icon_external = '<span class="glyphicon glyphicon-share" title="This is an external link"></span>'
+            
             html_item = '''            
-              <tr class="%s">
-                <td><small>%s</small></td>
-                <td><small>
-                    %s
-                    <br>
-                    <a href="%s">%s</a>
-                    </small>
+              <tr class="%s">                
+                <td>%s %s
+                    <br>                    
+                    <small><a href="%s">%s</a></small>                    
+                    <span class="pull-right">(<strong>%s</strong>)</span>
                 </td>                
                 <td>%s</td>                
                 <td><small>%s</small></td>                
             </tr>
               
-            ''' % ( item_class, 
-                  http_status, 
+            ''' % ( item_class,                   
+                  icon_external,
                   item.get('title','(no title)'), 
                   item.get('url','(no url)'),                  
                   item.get('url','(no url)'),                  
+                  http_status, 
                   html_referer,                  
                   ', '.join(item.get('forbidden_words',[])),
                 )
@@ -139,9 +142,8 @@ class HTMLWriterPipeline(object):
         html_table_open = '''   
             <table class="table table-bordered thumbnail">
                 <thead>
-                  <tr>
-                    <th>HTTP</th>
-                    <th>Title + URL</th>
+                  <tr>                    
+                    <th>HTTP Status + Page title + URL</th>
                     <th>Referer</th>
                     <th>Forb. words</th>
                   </tr>
