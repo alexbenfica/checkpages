@@ -14,9 +14,11 @@ class CPages(CrawlSpider):
     name = "cpages"
 
     countPages = {'internal':0, 'external': 0}
+
+    # Allow all http status code ( maybe there exists a constant to to that )
+    handle_httpstatus_list = range(100,506)
     
 
-    handle_httpstatus_list = [404, 503] 
     
     def __init__(self, start_url='', output_file='', forbidden_words_file='',  *args, **kwargs):
         super(CPages, self).__init__(*args, **kwargs)
@@ -25,9 +27,27 @@ class CPages(CrawlSpider):
         self.start_url_domain = start_url.split('//')[-1].replace('www.','').strip('/')
 
         self.rules = (
-            Rule(SgmlLinkExtractor(allow = (self.start_url_domain)) , follow=True, callback='parse_internal', process_links='process_links'),            
-            Rule(SgmlLinkExtractor(allow = ("[^%s]" % self.start_url_domain)), callback='parse_external',follow=False, process_links='process_links'),
+            # Rule to get internal links
+            Rule(
+                SgmlLinkExtractor(
+                    allow = (self.start_url_domain),
+                ) , 
+                follow=True, 
+                callback='parse_internal', 
+                process_links='process_links'
+            ),            
+                
+            # Rule to get external links (process but not follow them )
+            Rule(
+                SgmlLinkExtractor(
+                    allow = ("[^%s]" % self.start_url_domain)
+                ), 
+                callback='parse_external',
+                follow=False, 
+                process_links='process_links'
+            ),
         )        
+        
         
         # Apply the new rules...
         CrawlSpider._compile_rules(self)
