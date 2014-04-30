@@ -5,7 +5,7 @@ class Page(Item):
     url = Field()
     referer = Field()
     title = Field()
-    status = Field()
+    http_status = Field()
     html = Field()
     external = Field()
     forbidden_words = Field()

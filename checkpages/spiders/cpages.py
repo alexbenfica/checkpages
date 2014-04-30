@@ -6,9 +6,6 @@ from checkpages.items import Page
 
 
 
-
-
-
 class CPages(CrawlSpider):
     
     name = "cpages"
@@ -20,7 +17,15 @@ class CPages(CrawlSpider):
     
 
     
-    def __init__(self, start_url='', output_file='', forbidden_words_file='',  *args, **kwargs):
+    def __init__(self, 
+            start_url = '', 
+            output_html_filename = '', 
+            forbidden_words_file = '',  
+            *args, **kwargs ):
+                
+            
+            
+            
         super(CPages, self).__init__(*args, **kwargs)
         
         self.start_urls = [start_url]                
@@ -57,13 +62,17 @@ class CPages(CrawlSpider):
         self.forbiddenWords = []
         if forbidden_words_file:
             if os.path.exists(forbidden_words_file):                
-                self.forbiddenWords = open(forbidden_words_file,'r').read().lower().split("\n")
-                print 'Forbidden words loaded from file: %s' % forbidden_words_file
-                print self.forbiddenWords
+                self.forbiddenWords = open(forbidden_words_file,'r').read().split("\n")
+                print 'Forbidden seccessfully words loaded from file: %s' % forbidden_words_file
+                #print self.forbiddenWords
         
+
+        # Load the output file name inside the class variable to be used in a pipeline
+        self.output_html_filename = output_html_filename
         
-        #exit()
-        
+
+
+
 
 
     def process_links(self,links):
@@ -93,10 +102,15 @@ class CPages(CrawlSpider):
         sel = Selector(response)
         page = Page()
         
-        page['status'] = response.status
+        page['http_status'] = response.status
         page['url'] = response.url        
         page['referer'] = response.request.headers['referer']      
+        
         page['title'] = sel.xpath('//title/text()').extract()
+        if page['title']: 
+            page['title'] = page['title'][0].encode('utf-8')
+        else:
+            page['title'] = '(no title)'
         
         page['html'] = response.body
         #page['html'] = ''       
@@ -113,12 +127,14 @@ class CPages(CrawlSpider):
         print "\n"*2      
         print '# Ext.: %04d   |  Int.: %04d   |  TOTAL: %04d' % ( self.countPages['external'], self.countPages['internal'], self.countPages['external'] + self.countPages['internal'])
         print 'Parsed URL: [%s]' % page['url']
-        print 'HTTP Status Code: %d' % page['status']        
+        print 'HTTP Status Code: %d' % page['http_status']        
         print 'External: %s' %  page['external']
         
         
         return page
         
+
+
 
         
         

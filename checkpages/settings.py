@@ -7,7 +7,9 @@ SPIDER_MODULES = ['checkpages.spiders']
 NEWSPIDER_MODULE = 'checkpages.spiders'
 DEFAULT_ITEM_CLASS = 'checkpages.items.Page'
 
-ITEM_PIPELINES = {'checkpages.pipelines.FilterForbiddenWordsPipeline': 1}
+ITEM_PIPELINES = {  'checkpages.pipelines.FilterForbiddenWordsPipeline': 1, 
+                    'checkpages.pipelines.HTMLWriterPipeline': 2
+                }
 
 
 RETRY_TIMES = 1
