@@ -50,14 +50,9 @@ class HTMLWriterPipeline(object):
                 # Adds the CSS and JS Bootstrap CDN 
                 self.html.addCSS('http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css')
                 self.html.addJS('http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')        
-
-                
                 
                 self.html << div('', cl="page-header ") << h1('URLs from ' + a(spider.start_urls[0], href=spider.start_urls[0]).render())
-                
-                
                 self.html_container = self.html << div(cl="container-fluid") << div(cl="row")
-                
                 self.html_ok = self.html_container << div(cl="")
                 self.html_err = self.html_container << div(cl="")
                 

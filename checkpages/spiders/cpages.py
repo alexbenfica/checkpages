@@ -22,20 +22,29 @@ class CPages(CrawlSpider):
             output_html_filename = '', 
             forbidden_words_file = '',  
             *args, **kwargs ):
-                
-            
-            
             
         super(CPages, self).__init__(*args, **kwargs)
         
         self.start_urls = [start_url]                
         self.start_url_domain = start_url.split('//')[-1].replace('www.','').strip('/')
 
+        
+        regex_to_internal = "((\/\/)|(http\:\/\/)|(www.))+"+self.start_url_domain+"[^.][^?&]*"
+        
+        # The URL is processed by the first rules that matches!
+        # So ay other URLs are considered external and will not be followed, but will have the header requested to see if they are available, find 404 and so on.
+        regex_to_external = ".*"
+
+        #print regex_to_external
+        #print regex_to_internal         
+        #exit()
+        
+
         self.rules = (
             # Rule to get internal links
             Rule(
                 SgmlLinkExtractor(
-                    allow = (self.start_url_domain),
+                    allow = (regex_to_internal),
                 ) , 
                 follow=True, 
                 callback='parse_internal', 
@@ -45,7 +54,7 @@ class CPages(CrawlSpider):
             # Rule to get external links (process but not follow them )
             Rule(
                 SgmlLinkExtractor(
-                    allow = ("[^%s]" % self.start_url_domain)
+                    allow = (regex_to_external)
                 ), 
                 callback='parse_external',
                 follow=False, 
@@ -93,8 +102,12 @@ class CPages(CrawlSpider):
 
 
     # Return if a url is external, given the start_url domain
-    def is_external(self, url):
-        return not self.start_url_domain in url
+    def is_external(self, url):        
+        if 'http://' + self.start_url_domain + '/' in url:
+            return False
+        if 'http://www.' + self.start_url_domain + '/' in url:
+            return False        
+        return True
     
 
     def parse_internal(self, response):
@@ -108,7 +121,7 @@ class CPages(CrawlSpider):
         
         page['title'] = sel.xpath('//title/text()').extract()
         if page['title']: 
-            page['title'] = page['title'][0].encode('utf-8')
+            page['title'] = page['title'][0].encode('utf-8')            
         else:
             page['title'] = '(no title)'
         
@@ -128,6 +141,7 @@ class CPages(CrawlSpider):
         print '# Ext.: %04d   |  Int.: %04d   |  TOTAL: %04d' % ( self.countPages['external'], self.countPages['internal'], self.countPages['external'] + self.countPages['internal'])
         print 'Parsed URL: [%s]' % page['url']
         print 'HTTP Status Code: %d' % page['http_status']        
+        print 'Referer: %s' % page['referer']        
         print 'External: %s' %  page['external']
         
         
