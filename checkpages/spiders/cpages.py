@@ -91,10 +91,11 @@ class CPages(CrawlSpider):
         
         # Output on screen
         print "\n"*2      
+        print '# Ext.: %04d   |  Int.: %04d   |  TOTAL: %04d' % ( self.countPages['external'], self.countPages['internal'], self.countPages['external'] + self.countPages['internal'])
         print 'Parsed URL: [%s]' % page['url']
         print 'HTTP Status Code: %d' % page['status']        
         print 'External: %s' %  page['external']
-        print '# Ext.: %04d   |  Int.: %04d   |  TOTAL: %04d' % ( self.countPages['external'], self.countPages['internal'], self.countPages['external'] + self.countPages['internal'])
+        
         
         return page
         
