@@ -22,6 +22,12 @@ class FilterForbiddenWordsPipeline(object):
     def process_item(self, item, spider):
         
         item['forbidden_words'] = []
+        
+        # Never tries to findo forbidden words on external links.
+        # Some links points to foruns or pages that has the words that are forbidden. 
+        # As anyone can control external pages, does not make sense alarm this situation!
+        if item.get('external'): return item
+        
         html_lower = item['html'].lower()
         for word in spider.forbiddenWords:            
             if word.lower() in html_lower:
