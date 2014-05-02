@@ -7,9 +7,20 @@ It is used for some specific tasks:
 - detect and report invalid or undesired words on pages
 - as a side effect, forces the caching of pages on a server (like WordPress sites using cache plugins)
 
-# How to install
+# How to install and dependencies
 
-Install Scrapy and them download and run this script like the example below.
+Install Scrapy from http://scrapy.org/
+
+Install PyH https://code.google.com/p/pyh/ using 
+'''
+python setup.py install
+'''
+
+The access to Bootrap Css CDN is needed when viewing the HTML report.
+http://netdna.bootstrapcdn.com
+
+Download and run this script like the example below.
+
 
 # How to run
 
