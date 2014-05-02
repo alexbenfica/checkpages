@@ -182,7 +182,7 @@ class HTMLWriterPipeline(object):
                     html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
                     
                 
-                url = "%s" % img
+                url = img
                 
                 #print url                
                 #url = 'url'

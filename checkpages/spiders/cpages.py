@@ -26,6 +26,9 @@ class CPages(CrawlSpider):
     name = "cpages"
 
     countPages = {'internal':0, 'external': 0}
+    
+    # Keep track of already downloaded images, avoiding inserting them on lists againd.
+    image_links = []
 
     # Allow all http status code ( maybe there exists a constant to to that )
     handle_httpstatus_list = range(100,506)
@@ -126,12 +129,27 @@ class CPages(CrawlSpider):
         return True
     
 
-    def parse_internal(self, response):
+    # Get image urls from page, avoinding repeats
+    def get_image_urls(self,response):
+        image_urls = []
         
         hxs = HtmlXPathSelector(response)        
+        # Only get image links for internal pages
+        # Saves all image links
+        image_urls_on_page = hxs.select('//img/@src').extract()
+        for image_url in image_urls_on_page:
+            if not image_url in self.image_links:
+                image_urls.append(image_url)
+                self.image_links.append(image_url)
+        
+        return image_urls
+        #page['image_urls'] = [x for x in image_urls]  
+        
+        
+
+
+    def parse_internal(self, response):
         sel = Selector(response)
-        
-        
         page = Page()
         
         page['http_status'] = response.status
@@ -156,11 +174,7 @@ class CPages(CrawlSpider):
             self.countPages['external'] += 1
         else:
             self.countPages['internal'] += 1
-            
-            # Only get image links for internal pages
-            # Saves all image links
-            image_urls = hxs.select('//img/@src').extract()
-            page['image_urls'] = [x for x in image_urls]  
+            page['image_urls'] = self.get_image_urls(response)
             
             
             
