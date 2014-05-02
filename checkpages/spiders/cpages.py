@@ -46,8 +46,6 @@ class CPages(CrawlSpider):
         self.start_urls = [start_url]                
         self.start_url_domain = start_url.split('//')[-1].replace('www.','').strip('/')
 
-        # Optional configuration for image downloading.
-        IMAGES_STORE = '/media/sf_C_DRIVE/Temp/'
 
 
 

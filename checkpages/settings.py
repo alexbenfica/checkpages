@@ -1,4 +1,11 @@
 from scrapy import log
+import sys
+
+
+
+
+
+
 
 # Scrapy settings for checkpages project
 
@@ -12,6 +19,26 @@ ITEM_PIPELINES = {  'checkpages.pipelines.FilterForbiddenWordsPipeline': 3,
                     'checkpages.pipelines.MyImagesPipeline': 1,
                     #'scrapy.contrib.pipeline.images.ImagesPipeline': 1,                    
                 }
+
+
+
+
+
+# Get the parameter which specify image downloading path
+#print sys.argv
+output_image_folder = ''
+for arg in sys.argv:    
+    if 'output_image_folder' in arg:
+        output_image_folder = arg.split('=')[-1]
+        
+if output_image_folder:        
+    IMAGES_STORE = output_image_folder
+else:
+    print 'You must specify a folder where images downloaded will be stored!'
+    print 'Do it adding the followint to the command line: -a output_image_folder=/path/to/image/dir'
+    sys.exit('Check your command line parameters!')
+
+
 
 
 
