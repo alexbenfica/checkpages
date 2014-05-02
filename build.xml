@@ -22,8 +22,8 @@
 	
 	
     <target name="clean">    	
-    	<delete dir="${producao}" failonerror="false" />    	
-    	<mkdir dir="${producao}"/>
+    	<delete dir="${producao}" failonerror="false" />    	        
+    	<mkdir dir="${producao}"/>        
     </target>
 	
 
