@@ -1,9 +1,23 @@
+import sys
 import os.path
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.selector import Selector
 from scrapy.selector import HtmlXPathSelector
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from checkpages.items import Page
+
+
+
+
+
+
+# Change the default encoding from ascii to utf-8
+# http://stackoverflow.com/questions/11741574/how-to-deal-with-utf-8-encoded-text-when-writing-to-the-console-in-python-3
+# to enable `setdefaultencoding` again
+reload(sys)  
+sys.setdefaultencoding("UTF-8")
+
+
 
 
 
@@ -126,7 +140,7 @@ class CPages(CrawlSpider):
         
         page['title'] = sel.xpath('//title/text()').extract()
         if page['title']: 
-            page['title'] = page['title'][0].encode('utf-8')            
+            page['title'] = page['title'][0]
         else:
             page['title'] = '(no title)'
         
@@ -146,7 +160,10 @@ class CPages(CrawlSpider):
             # Only get image links for internal pages
             # Saves all image links
             image_urls = hxs.select('//img/@src').extract()
-            page['image_urls'] = [x for x in image_urls]             
+            page['image_urls'] = [x for x in image_urls]  
+            
+            
+            
             
              
         

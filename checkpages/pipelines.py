@@ -58,10 +58,12 @@ class HTMLWriterPipeline(object):
             if not self.html_file: 
                 self.html_file = open(spider.output_html_filename,'w')
                 # Initializa HTML with title
-                self.html = PyH('CheckPages HTML report for %s !' % spider.start_url_domain)        
+                self.html = PyH('CheckPages HTML report for %s !' % spider.start_url_domain)
                 # Adds the CSS and JS Bootstrap CDN 
                 self.html.addCSS('http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css')
                 self.html.addJS('http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js')        
+                
+                self.html.head += '<meta charset="utf8">'
                 
                 self.html << div('', cl="page-header ") << h1('URLs from ' + a(spider.start_urls[0], href=spider.start_urls[0]).render())
                 self.html_container = self.html << div(cl="container-fluid") << div(cl="row")
@@ -116,8 +118,8 @@ class HTMLWriterPipeline(object):
                   ', '.join(forbidden_words),
                 )
                 
-            html_item = html_item.decode('utf-8', 'ignore')
-            html_item = html_item.encode('utf-8', 'ignore')
+            #html_item = html_item.decode('utf-8', 'ignore')
+            #html_item = html_item.encode('utf-8', 'ignore')
                 
             return html_item
                 
