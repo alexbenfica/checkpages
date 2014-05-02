@@ -149,7 +149,11 @@ class CPages(CrawlSpider):
 
 
     def parse_internal(self, response):
+        
+        
         sel = Selector(response)
+        
+        
         page = Page()
         
         page['http_status'] = response.status

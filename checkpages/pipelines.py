@@ -77,13 +77,14 @@ class HTMLWriterPipeline(object):
 
         
             
-
+    # With all downloade itens available, generate the HTML report!
     def close_spider(self, spider):
         if not self.html_file: return        
 
         # sort itens alphabetically by title
         from operator import itemgetter        
         self.itens = sorted(self.itens, key=itemgetter('title', 'external'))
+        
 
 
 
