@@ -10,3 +10,6 @@ class Page(Item):
     external = Field()
     forbidden_words = Field()
     
+    image_urls = Field()
+    images = Field()
+    

@@ -1,6 +1,7 @@
 import os.path
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.selector import Selector
+from scrapy.selector import HtmlXPathSelector
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from checkpages.items import Page
 
@@ -28,7 +29,8 @@ class CPages(CrawlSpider):
         self.start_urls = [start_url]                
         self.start_url_domain = start_url.split('//')[-1].replace('www.','').strip('/')
 
-        
+        # Excelent place to test regex
+        # http://regex101.com/#pcre
         regex_to_internal = "((\/\/)|(http\:\/\/)|(www.))+"+self.start_url_domain+"[^.]"
         
         # The URL is processed by the first rules that matches!
@@ -112,7 +114,10 @@ class CPages(CrawlSpider):
 
     def parse_internal(self, response):
         
+        hxs = HtmlXPathSelector(response)        
         sel = Selector(response)
+        
+        
         page = Page()
         
         page['http_status'] = response.status
@@ -129,11 +134,20 @@ class CPages(CrawlSpider):
         #page['html'] = ''       
         
         
+        page['images'] = []
+        page['image_urls'] = []
+        
         page['external'] =  self.is_external(page['url'])        
         if page['external']:
             self.countPages['external'] += 1
         else:
             self.countPages['internal'] += 1
+            
+            # Only get image links for internal pages
+            # Saves all image links
+            image_urls = hxs.select('//img/@src').extract()
+            page['image_urls'] = [x for x in image_urls]             
+            
              
         
         # Output on screen
@@ -142,8 +156,9 @@ class CPages(CrawlSpider):
         print 'Parsed URL: [%s]' % page['url']
         print 'HTTP Status Code: %d' % page['http_status']        
         print 'Referer: %s' % page['referer']        
-        print 'External: %s' %  page['external']
-        
+        print 'Number of image links found in this page: %d' % len(page['image_urls'])
+        print 'External: %s' %  page['external']        
+        #print page['image_urls']
         
         return page
         

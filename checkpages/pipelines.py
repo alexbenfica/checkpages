@@ -1,11 +1,15 @@
+from scrapy.contrib.pipeline.images import ImagesPipeline
 from scrapy.exceptions import DropItem
 from scrapy import signals
+from scrapy.http import Request
+
+
+
+
 
 # https://code.google.com/p/pyh/
 # install it using python setup.py install
 from pyh import *
-
-
 
 
 
@@ -23,9 +27,11 @@ class FilterForbiddenWordsPipeline(object):
             if word.lower() in html_lower:
                 item['forbidden_words'].append(word)               
                 
-        print 'Filtering forbidden words : %s ' % ', '.join(item['forbidden_words'])                
-        print
+        #print 'Filtering forbidden words : %s ' % ', '.join(item['forbidden_words'])                
+        #print
         return item
+
+
 
 
 
@@ -56,6 +62,7 @@ class HTMLWriterPipeline(object):
 
             
     def open_spider(self, spider):
+        self.spider = spider
         if not self.html_file: return
         self.itens = []
         # Well... nothing here yet.        
@@ -73,13 +80,42 @@ class HTMLWriterPipeline(object):
 
 
         
-        def html_page_header(title, subtitle, content): 
+        def get_html_page_header(title, subtitle, content): 
             return '''
             <div class="page-header">
               <h1>%s <small> %s </small></h1>
               %s
             </div>
         ''' % (title , subtitle, content)
+        
+
+
+        def get_html_item(item_class, icon, title, url, http_status, html_referer, forbidden_words = '' ):             
+            html_item =  '''            
+              <tr class="%s">                
+                <td>%s | %s<small> | <a href="%s">%s</a></small>                    
+                    <span class="pull-right">(<strong>%s</strong>)</span>
+                </td>                
+                <td>%s</td>                
+                <td><small>%s</small></td>                
+            </tr>
+
+            ''' % ( item_class,                   
+                  icon,
+                  title, 
+                  url,                  
+                  url,                  
+                  http_status, 
+                  html_referer,                  
+                  ', '.join(forbidden_words),
+                )
+                
+            html_item = html_item.decode('utf-8', 'ignore')
+            html_item = html_item.encode('utf-8', 'ignore')
+                
+            return html_item
+                
+        
         
         
         html_errors = ''
@@ -89,52 +125,88 @@ class HTMLWriterPipeline(object):
             
             http_status = int(item.get('http_status', 999))                        
             # Set colors for each HTTP erros (aprox.)
-            item_class = 'danger';            
+            item_class = 'danger';
             if http_status < 400: item_class = 'primary';
             if http_status < 300: item_class = 'success';                
                 
             item_has_errors = False
             if item.get('forbidden_words',[]): item_has_errors = True
             if http_status >= 400: item_has_errors = True
+
             
             
             if item_has_errors:
-                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit and Fix</span></a></small>' % item.get('referer','(no referer)')
+                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('referer','(no referer)')
             else:
                 html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
                 
             
-            icon_external = ''
+            icon = ''
             if item['external']:
-                icon_external = '<span class="glyphicon glyphicon-share" title="This is an external link"></span>'
-            
-            html_item = '''            
-              <tr class="%s">                
-                <td>%s %s
-                    <br>                    
-                    <small><a href="%s">%s</a></small>                    
-                    <span class="pull-right">(<strong>%s</strong>)</span>
-                </td>                
-                <td>%s</td>                
-                <td><small>%s</small></td>                
-            </tr>
-              
-            ''' % ( item_class,                   
-                  icon_external,
-                  item.get('title','(no title)'), 
-                  item.get('url','(no url)'),                  
-                  item.get('url','(no url)'),                  
-                  http_status, 
-                  html_referer,                  
-                  ', '.join(item.get('forbidden_words',[])),
-                )
-        
+                icon = '<span class="glyphicon glyphicon-share" title="This is an external link"></span>'
+
+            html_item = get_html_item(item_class, icon, item.get('title','(no title)'), item.get('url','(no url)'), http_status, html_referer, item.get('forbidden_words',[]))
+
             if item_has_errors:
                 html_errors += html_item
             else:
                 html_ok += html_item
                 
+
+
+        for item in self.itens:            
+            
+            # Each imagens is considered an "item" for this HTML output
+            iImage = -1
+            for img in item.get('image_urls',[]):                
+                iImage += 1
+                
+                image_item_has_errors = not item['images'][iImage][0]
+                
+                item_class = 'danger';
+                if item['images'][iImage][0] == True:  item_class = 'success';
+                
+                title = '(image)'
+                
+                if image_item_has_errors:
+                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('referer','(no referer)')
+                else:
+                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
+                    
+                
+                url = "%s" % img
+                
+                #print url                
+                #url = 'url'
+                
+                
+                icon = ''
+                if self.spider.is_external(url):
+                    icon = '<span class="glyphicon glyphicon-share" title="This is an external link"></span>'
+                    
+                # Put an extra icon to identify a image
+                icon += '<span class="glyphicon glyphicon-picture" title="This is an image link"></span>'
+                
+                #print img
+                #print item['images'][iImage]
+                
+                if image_item_has_errors:
+                    # Forced
+                    http_status = 404
+                    html_errors += get_html_item(item_class, icon, title, url , http_status, html_referer)
+                else:
+                    http_status = 200
+                    html_ok += get_html_item(item_class, icon, title, url , http_status, html_referer)
+                    pass
+                    
+                
+                
+                
+                
+            
+        
                
+            #print item['images']
         
 
 
@@ -143,7 +215,7 @@ class HTMLWriterPipeline(object):
             <table class="table table-bordered thumbnail">
                 <thead>
                   <tr>                    
-                    <th>HTTP Status + Page title + URL</th>
+                    <th>Page title | URL | HTTP Code</th>
                     <th>Referer</th>
                     <th>Forb. words</th>
                   </tr>
@@ -151,16 +223,15 @@ class HTMLWriterPipeline(object):
                 <tbody>
             '''
         
-        
         html_table_close = '''        
                 </tbody>
             </table>
             '''
 
         
-        self.html_container << html_page_header('Links with problems', 'You must check and fix each one', html_table_open + html_errors + html_table_close )        
+        self.html_container << get_html_page_header('Links and images with problems', '', html_table_open + html_errors + html_table_close )        
         
-        self.html_container << html_page_header('Links  apparently ok', 'You can visit each one here', html_table_open + html_ok + html_table_close  )        
+        self.html_container << get_html_page_header('Links and images ok', '', html_table_open + html_ok + html_table_close  )        
 
             
         # Write HTML to disk!        
@@ -176,4 +247,48 @@ class HTMLWriterPipeline(object):
         return item
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+class MyImagesPipeline(ImagesPipeline):
+    def get_media_requests(self, item, info):
+        for image_url in item['image_urls']:
+            print ' - Adding image url to the download queue: %s' % image_url
+            yield Request(image_url)
+
+
+    def item_completed(self, results, item, info):
+        image_paths = [x['path'] for ok, x in results if ok]
+        
+        item['images'] += results
+        
+        if len(results): print ' - Finished downloading of the following images:'
+        
+        iImage = 0
+        for image_result in results:
+            download_status = image_result[0]
+            if download_status == True:
+                print '     Status: %s | Url: %s '  % (download_status , image_result[1].get('url','') )
+            else:
+                print '     Status: %s | Url: %s '  % (download_status , item['image_urls'][iImage] )
+            iImage += 1
+                
+            #print image_result
+        
+        if not image_paths:            
+            #raise DropItem("Item contains no images")
+            return item
+        
+        #item['image_paths'] = image_paths
+        return item    
+    
+    
+
     
