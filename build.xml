@@ -1,0 +1,40 @@
+<project 
+	name="CheckPagesCrawler" 
+	default="default" 
+	basedir=".">
+	
+    <description>
+    	Generate reports of bad links on a whole website
+    </description>
+	
+	<property name="devel" location="."/>	
+	<property name="producao" location="/media/sf_D_DRIVE/Dropbox/Producao/CheckPagesCrawler/"/>
+
+	
+    <target 
+    	name="default" 
+    	depends="clean, clone" 
+    	description="Envia para o diretorio definitivo">
+    	<!-- Create the time stamp -->
+    	<tstamp/>    	
+    </target>
+	
+	
+	
+    <target name="clean">    	
+    	<delete dir="${producao}" failonerror="false" />    	
+    	<mkdir dir="${producao}"/>
+    </target>
+	
+
+    <target name="clone">
+        <exec executable="git" dir="${devel}">
+            <arg value="clone" />
+            <arg value="--branch" />
+            <arg value="master" />
+            <arg value="/media/sf_D_DRIVE/Dropbox/Devel/Linux/CheckPagesCrawler/" />
+            <arg value="${producao}" />    
+        </exec>
+    </target>
+
+</project>

@@ -15,8 +15,6 @@ ITEM_PIPELINES = {  'checkpages.pipelines.FilterForbiddenWordsPipeline': 3,
 
 
 
-# Optional configuration for image downloading.
-IMAGES_STORE = '/media/sf_C_DRIVE/Temp/'
 
 # These are useful when you are actually doing a crawler.
 # As I am doing a page check, I intend to download all images I found!
