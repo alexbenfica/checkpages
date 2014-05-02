@@ -31,7 +31,7 @@ class FilterForbiddenWordsPipeline(object):
         html_lower = item['html'].lower()
         for word in spider.forbiddenWords:            
             if word.lower() in html_lower:
-                item['forbidden_words'].append(word)               
+                item['forbidden_words'].append(word)
                 
         #print 'Filtering forbidden words : %s ' % ', '.join(item['forbidden_words'])                
         #print
@@ -99,7 +99,7 @@ class HTMLWriterPipeline(object):
         
 
 
-        def get_html_item(item_class, icon, title, url, http_status, html_referer, forbidden_words = '' ):             
+        def get_html_item(item_class, icon, title, url, http_status, fix_url, forbidden_words = '' ):             
             html_item =  '''            
               <tr class="%s">                
                 <td>%s | %s<small> | <a href="%s">%s</a></small>                    
@@ -115,7 +115,7 @@ class HTMLWriterPipeline(object):
                   url,                  
                   url,                  
                   http_status, 
-                  html_referer,                  
+                  fix_url,                  
                   ', '.join(forbidden_words),
                 )
                 
@@ -145,16 +145,19 @@ class HTMLWriterPipeline(object):
             
             
             if item_has_errors:
-                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('referer','(no referer)')
+                if item.get('forbidden_words',''):
+                    fix_url = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('url','(no url)')
+                else:
+                    fix_url = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('referer','(no referer)')                    
             else:
-                html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
+                fix_url = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
                 
             
             icon = ''
             if item['external']:
                 icon = '<span class="glyphicon glyphicon-share" title="This is an external link"></span>'
 
-            html_item = get_html_item(item_class, icon, item.get('title','(no title)'), item.get('url','(no url)'), http_status, html_referer, item.get('forbidden_words',[]))
+            html_item = get_html_item(item_class, icon, item.get('title','(no title)'), item.get('url','(no url)'), http_status, fix_url, item.get('forbidden_words',[]))
 
             if item_has_errors:
                 html_errors += html_item
@@ -178,9 +181,9 @@ class HTMLWriterPipeline(object):
                 title = '(image)'
                 
                 if image_item_has_errors:
-                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('url','(no referer)')
+                    fix_url = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('url','(no referer)')
                 else:
-                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('url','(no referer)')
+                    fix_url = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('url','(no referer)')
                     
                 
                 url = img
@@ -202,10 +205,10 @@ class HTMLWriterPipeline(object):
                 if image_item_has_errors:
                     # Forced
                     http_status = 404
-                    html_errors += get_html_item(item_class, icon, title, url , http_status, html_referer)
+                    html_errors += get_html_item(item_class, icon, title, url , http_status, fix_url)
                 else:
                     http_status = 200
-                    html_ok += get_html_item(item_class, icon, title, url , http_status, html_referer)
+                    html_ok += get_html_item(item_class, icon, title, url , http_status, fix_url)
                     pass
                     
                 
@@ -225,7 +228,7 @@ class HTMLWriterPipeline(object):
                 <thead>
                   <tr>                    
                     <th>Page title | URL | HTTP Code</th>
-                    <th>Referer</th>
+                    <th>Where to fix</th>
                     <th>Forb. words</th>
                   </tr>
                 </thead>
