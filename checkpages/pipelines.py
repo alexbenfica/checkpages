@@ -177,9 +177,9 @@ class HTMLWriterPipeline(object):
                 title = '(image)'
                 
                 if image_item_has_errors:
-                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('referer','(no referer)')
+                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-danger"><span class="glyphicon glyphicon-wrench"></span> Visit to Fix</span></a></small>' % item.get('url','(no referer)')
                 else:
-                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('referer','(no referer)')
+                    html_referer = '<small><a href="%s"><span class="btn btn-mini btn-success">Visit</span></a></small>' % item.get('url','(no referer)')
                     
                 
                 url = img
