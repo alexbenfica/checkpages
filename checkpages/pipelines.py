@@ -3,7 +3,7 @@ from scrapy.exceptions import DropItem
 from scrapy import signals
 from scrapy.http import Request
 
-
+import os
 
 
 
@@ -52,10 +52,22 @@ class HTMLWriterPipeline(object):
         self.html_file = None
         self.itens = []
         
+        
+    def createPath(dirPath):
+        path, filename = os.path.split(dirPath)
+        if not os.path.isdir(path):
+            try:
+                os.makedirs(path)
+            except:
+                print 'Could not create path for file %s. ' % filename
+                print 'Path: %s (maybe it already exists or it is locked!)' % (path)
+        
+        
 
     def initializeFile(self, spider):
         if spider.output_html_filename:
             if not self.html_file: 
+                self.cratePath(spider.output_html_filename)
                 self.html_file = open(spider.output_html_filename,'w')
                 # Initializa HTML with title
                 self.html = PyH('CheckPages HTML report for %s !' % spider.start_url_domain)
