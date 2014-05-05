@@ -53,7 +53,7 @@ class HTMLWriterPipeline(object):
         self.itens = []
         
         
-    def createPath(dirPath):
+    def createPath(self, dirPath):
         path, filename = os.path.split(dirPath)
         if not os.path.isdir(path):
             try:
