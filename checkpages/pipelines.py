@@ -67,7 +67,7 @@ class HTMLWriterPipeline(object):
     def initializeFile(self, spider):
         if spider.output_html_filename:
             if not self.html_file: 
-                self.cratePath(spider.output_html_filename)
+                self.createPath(spider.output_html_filename)
                 self.html_file = open(spider.output_html_filename,'w')
                 # Initializa HTML with title
                 self.html = PyH('CheckPages HTML report for %s !' % spider.start_url_domain)
