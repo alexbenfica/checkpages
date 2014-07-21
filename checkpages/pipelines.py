@@ -252,8 +252,8 @@ class HTMLWriterPipeline(object):
             </table>
             '''
 
-        
-        self.html_container << get_html_page_header('Links and images with problems', '', html_table_open + html_errors + html_table_close )        
+        if html_errors:
+            self.html_container << get_html_page_header('Links and images with problems', '', html_table_open + html_errors + html_table_close )        
         
         self.html_container << get_html_page_header('Links and images ok', '', html_table_open + html_ok + html_table_close  )        
 
