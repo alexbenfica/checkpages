@@ -1,0 +1,2 @@
+﻿#!/bin/sh
+/usr/local/bin/scrapy crawl cpages -a start_url=http://www.jogos.palpitedigital.com/ -a output_html_filename=/tmp/checkpages_test_results.html -a output_image_folder=/tmp/checkpage-images-from-test/

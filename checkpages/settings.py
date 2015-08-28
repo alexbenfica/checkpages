@@ -56,7 +56,11 @@ RETRY_TIMES = 1
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
 DOWNLOAD_TIMEOUT = 10
 
-
+#Default: 0
+#The amount of time (in secs) that the downloader should wait before downloading 
+#consecutive pages from the same website. 
+#This can be used to throttle the crawling speed to avoid hitting servers too hard.
+DOWNLOAD_DELAY = 0.5
 
 # Change the order of downloads, getting first those near the root
 DEPTH_PRIORITY = 1
